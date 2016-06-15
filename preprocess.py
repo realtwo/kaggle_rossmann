@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import pandas as pd
- 
+import matplotlib.pyplot as plt
+import numpy as np
 
 def cal_per_store_sales_summary(df_sales):
     
@@ -9,7 +10,9 @@ def cal_per_store_sales_summary(df_sales):
     df_sales = df_sales[df_sales['Open']==1]
     sale_mean = df_sales[['Store','Sales'] ].groupby('Store').mean()
     sale_median = df_sales[['Store','Sales'] ].groupby('Store').median()
-    
+    sale_min = df_sales[['Store','Sales'] ].groupby('Store').min()
+    sale_max = df_sales[['Store','Sales'] ].groupby('Store').max()
+
 
     sale_mean.columns= ['MeanSales']   
     sale_median.columns= ['MedianSales']
@@ -20,6 +23,25 @@ def cal_per_store_sales_summary(df_sales):
 
     df_sales = df_sales.join(sale_mean, on='Store')
     df_sales = df_sales.join(sale_median, on='Store')
+
+    # Visualize
+    plt.figure()
+    plt.plot(sale_max, label='max')
+    plt.plot(sale_min, label='min')
+    plt.plot(sale_mean, label='mean')
+    plt.plot(sale_median, label='median')
+    plt.legend(loc='upper right')
+    plt.xlabel('Store Id')
+    plt.ylabel('Sales')
+    plt.title('Store sales')
+
+    plt.figure()
+    customer_mean = df_sales[['Store','Customers'] ].groupby('Store').mean()
+    logx = np.log(customer_mean)
+    logy = np.log(sale_mean)
+    plt.scatter(logx, logy)
+    plt.xlabel('Customer (log)')
+    plt.ylabel('Sales (log)')
 
     return df_sales
     
@@ -53,6 +75,9 @@ def build_feature_label():
 
     # calculate per store mean and median sales and add to sales
     df_sales= cal_per_store_sales_summary(df_sales)
+
+
+
 
     # Merge the sales data with store info
     df = pd.merge(df_sales, df_store, on='Store') #store info
@@ -107,9 +132,23 @@ def build_feature_label():
     print x_all.info()
 
     # Visualization
-    #import matplotlib.pyplot as plt
-    #plt.plot(x_all.Customers, y_all)
-    #plt.show()
+
+    plt.figure()
+    store_id = 2
+    s = df[df.Store==store_id]
+    plt.plot(s.Sales)
+    plt.xlabel('Day index')
+    plt.ylabel('Sales')
+    plt.title('Sales vs. time')
+
+
+    plt.figure()
+    plt.hist(y_all, 50)
+    plt.xlabel('Sales')
+    plt.ylabel('Probability')
+    plt.title('Histogram of sales')
+
+    plt.show()
 
     return x_all, y_all
 
