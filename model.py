@@ -24,15 +24,9 @@ def evaluate_model(clf, x_train, y_train, x_test, y_test):
     print "RMSE: {}".format(performance_metric(y_true=y_test, y_pred=y_pred))
 
 
-def main():  
-    x_all, y_all = preprocess.build_feature_label()
-
-    from sklearn.cross_validation import train_test_split
-    x_train, x_test, y_train, y_test = train_test_split(x_all, y_all, 
-                                            test_size=0.3, random_state=seed)
-
+def basic_training(x_train, x_test, y_train, y_test):
   
-    print 'Training models... '
+    print 'Training basic models... '
 
     # Baseline 1: use mean
     print '----------------------'
@@ -49,11 +43,22 @@ def main():
     clf = RandomForestRegressor(random_state=seed)
     evaluate_model(clf, x_train, y_train, x_test, y_test)
 
-    from sklearn.ensemble import AdaBoostRegressor
-    clf = AdaBoostRegressor(random_state=seed)
-    evaluate_model(clf, x_train, y_train, x_test, y_test)
+    print 'Done!'  
 
-    print 'Done!'    
+def tuning():
+    pass
+
+
+
+
+def main():  
+    x_all, y_all = preprocess.build_feature_label()
+    from sklearn.cross_validation import train_test_split
+    x_train, x_test, y_train, y_test = train_test_split(x_all, y_all, 
+                                            test_size=0.3, random_state=seed)
+
+    basic_training(x_train, x_test, y_train, y_test)
+  
 
 if __name__ == "__main__":
     main()

@@ -107,10 +107,9 @@ def build_feature_label():
     print x_all.info()
 
     # Visualization
-
-    import matplotlib.pyplot as plt
-    plt.plot(x_all.Customers, y_all)
-    plt.show()
+    #import matplotlib.pyplot as plt
+    #plt.plot(x_all.Customers, y_all)
+    #plt.show()
 
     return x_all, y_all
 
