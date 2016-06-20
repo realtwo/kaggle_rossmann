@@ -11,6 +11,7 @@ def performance_metric(y_true, y_pred):
 
 def evaluate_model(clf, x_train, y_train, x_test, y_test):
     print '----------------------'
+    print 'Basic training'
     print clf
 
     start = time()
@@ -42,16 +43,15 @@ def cal_baseline(x_train, x_test, y_train, y_test):
     print 'Baseline: median sales'
     print "RMSE: {}".format(performance_metric(y_true=y_test, y_pred=x_test[:, 6]))  #col 6 for median
 
-def tuned_training(clf, x_train, x_test, y_train, y_test):
+
+def grid_search(clf, x_train, y_train, params):
     from sklearn.cross_validation import KFold
     from sklearn.grid_search import GridSearchCV
-    
-    start = time()
-    print 'Tuning model...'
 
-    params = {'max_features':['auto', 'sqrt'],
-              'min_samples_leaf':[1, 10, 50],
-              'n_estimators':[5,10,20]}
+#    params = {'max_features':['auto', 'sqrt'],
+#              'min_samples_leaf':[1, 10, 50],
+#              'n_estimators':[5,10,20]}
+
 
     # cross validation
     cv_sets = KFold(x_train.shape[0], 3, True, seed)
@@ -59,7 +59,20 @@ def tuned_training(clf, x_train, x_test, y_train, y_test):
     print "Grid search..."
     grid = GridSearchCV(clf, params, cv=cv_sets, scoring=score_func)
     grid = grid.fit(x_train, y_train)
-    clf_opt = grid.best_estimator_  
+    return grid.best_estimator_      
+
+
+def tuned_training(clf, x_train, x_test, y_train, y_test):
+    print '---------------------'
+    start = time()
+    print 'Tuning model...'
+    
+    p1 = 'max_depth'
+    params = {p1:[16,20,24]}
+    
+    clf_opt = grid_search(clf, x_train, y_train, params)
+
+    print "Parameter {} is {} for the optimal model.".format(p1, clf_opt.get_params()[p1])   
 
     # predict with optimal model after fitting the data
     y_pred = clf_opt.predict(x_test)
@@ -78,10 +91,14 @@ def main():
     #cal_baseline(x_train, x_test, y_train, y_test)
 
     # Learning models
-    from sklearn.ensemble import RandomForestRegressor
-    clf = RandomForestRegressor(random_state=seed)
+    #from sklearn.ensemble import RandomForestRegressor
+    #clf = RandomForestRegressor(random_state=seed)
 
-    #basic_training(clf, x_train, x_test, y_train, y_test)
+    from sklearn.tree import DecisionTreeRegressor
+    clf = DecisionTreeRegressor(random_state=seed)
+
+
+    basic_training(clf, x_train, x_test, y_train, y_test)
   
     tuned_training(clf, x_train, x_test, y_train, y_test)
 
