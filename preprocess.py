@@ -46,6 +46,14 @@ def build_feature_label():
 
     print 'Total entries in sales: {}'.format(df_sales.shape[0])
     print 'Total entries in store: {}'.format(df_store.shape[0])
+
+
+    # Sample data
+    print 'Sample entries in train.csv'
+    print df_sales.head()
+
+    print 'Sample entries in store.csv'
+    print df_store.head()
     
 #    print df_sales.Store.unique()
 #    print df_sales.DayOfWeek.unique()
