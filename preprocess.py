@@ -126,7 +126,3 @@ def build_feature_label():
 if __name__ == "__main__":
 
     x_all, y_all = build_feature_label()
-
-    
-
-

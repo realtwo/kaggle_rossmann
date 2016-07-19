@@ -16,6 +16,8 @@ def basic_training(clf, x_train, x_test, y_train, y_test):
     print clf
 
     start = time()
+
+
     clf.fit(x_train, y_train)
     y_pred = clf.predict(x_test)
 
@@ -26,16 +28,17 @@ def basic_training(clf, x_train, x_test, y_train, y_test):
 
     print 'Done!'  
 
-def cal_baseline(x_train, x_test, y_train, y_test):
+def cal_baseline(x_test, y_test):
+
     # Baseline 1: use mean
     print '----------------------'
     print 'Baseline: mean sales'
-    print "RMSE: {}".format(performance_metric(y_true=y_test, y_pred=x_test[:, 5]))  #col 5 for mean
+    print "RMSE: {}".format(performance_metric(y_true=y_test, y_pred=x_test['MeanSales']))  
 
     # Baseline 2: use median
     print '----------------------'
     print 'Baseline: median sales'
-    print "RMSE: {}".format(performance_metric(y_true=y_test, y_pred=x_test[:, 6]))  #col 6 for median
+    print "RMSE: {}".format(performance_metric(y_true=y_test, y_pred=x_test['MedianSales']))  
 
 
 def grid_search(clf, x_train, y_train, params):
@@ -107,19 +110,24 @@ def cal_sensitivity(clf, x_all, y_all, train_size):
 
 def main():  
     x_all, y_all = preprocess.build_feature_label()
+   
+    train_size = int(x_all.shape[0] * 0.7)
+    test_size = x_all.shape[0] - train_size
+
+    x_train = x_all[0:train_size]
+    x_test = x_all[train_size:]
+
+    y_train = y_all[0:train_size]
+    y_test = y_all[train_size:]
 
 
-    x_train, x_test, y_train, y_test = train_test_split(x_all, y_all, 
-                                         test_size=0.3, random_state=seed)
-
-    train_size = x_train.shape[0]
-
-    cal_baseline(x_train, x_test, y_train, y_test)
+    cal_baseline(x_test, y_test)
 
     # Learning models
     from sklearn.tree import DecisionTreeRegressor
-    clf = DecisionTreeRegressor(random_state=seed)
-
+    from sklearn.ensemble import RandomForestRegressor
+    #clf = DecisionTreeRegressor(random_state=seed)
+    clf = RandomForestRegressor(random_state=seed)
 
     basic_training(clf, x_train, x_test, y_train, y_test)
   
