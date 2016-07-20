@@ -2,6 +2,7 @@ import preprocess
 from sklearn.metrics import mean_squared_error, make_scorer
 from time import time
 from sklearn.cross_validation import train_test_split
+from sklearn import tree
 
 
 seed = 53
@@ -26,7 +27,26 @@ def basic_training(clf, x_train, x_test, y_train, y_test):
     end = time() 
     print "Trained model in {:.4f} seconds".format(end - start) 
 
-    print 'Done!'  
+
+    # plot feature importance
+    importance = clf.feature_importances_
+    importance = 100.0 * (importance / importance.max())
+
+    import matplotlib.pyplot as plt
+    import numpy as np
+    sorted_idx = np.argsort(importance)
+    pos = np.arange(sorted_idx.shape[0]) + .5
+    plt.figure()
+    plt.barh(pos, importance[sorted_idx], align='center')
+    plt.yticks(pos, x_train.columns[sorted_idx])
+    plt.xlabel('Relative Importance')
+    plt.title('Variable Importance')
+    plt.show()
+
+
+
+
+    print 'Done basic training!'  
 
 def cal_baseline(x_test, y_test):
 
@@ -124,10 +144,10 @@ def main():
     cal_baseline(x_test, y_test)
 
     # Learning models
-    from sklearn.tree import DecisionTreeRegressor
-    from sklearn.ensemble import RandomForestRegressor
-    #clf = DecisionTreeRegressor(random_state=seed)
-    clf = RandomForestRegressor(random_state=seed)
+    clf = tree.DecisionTreeRegressor(random_state=seed)
+
+    #from sklearn.ensemble import RandomForestRegressor
+    #clf = RandomForestRegressor(random_state=seed)
 
     basic_training(clf, x_train, x_test, y_train, y_test)
   
