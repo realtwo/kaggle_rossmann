@@ -4,13 +4,15 @@ from time import time
 from sklearn.cross_validation import train_test_split
 from sklearn import tree
 
+import matplotlib.pyplot as plt
+import numpy as np
 
 seed = 53
 
 def performance_metric(y_true, y_pred):
     return mean_squared_error(y_true, y_pred)**0.5
 
-def basic_training(clf, x_train, x_test, y_train, y_test):
+def basic_training(clf, x_train, x_test, y_train, y_test, plot_importance=False):
   
     print '----------------------'
     print 'Basic training'
@@ -27,26 +29,23 @@ def basic_training(clf, x_train, x_test, y_train, y_test):
     end = time() 
     print "Trained model in {:.4f} seconds".format(end - start) 
 
-
     # plot feature importance
-    importance = clf.feature_importances_
-    importance = 100.0 * (importance / importance.max())
+    if plot_importance:
+        importance = clf.feature_importances_
+        importance = 100.0 * (importance / importance.max())
 
-    import matplotlib.pyplot as plt
-    import numpy as np
-    sorted_idx = np.argsort(importance)
-    pos = np.arange(sorted_idx.shape[0]) + .5
-    plt.figure()
-    plt.barh(pos, importance[sorted_idx], align='center')
-    plt.yticks(pos, x_train.columns[sorted_idx])
-    plt.xlabel('Relative Importance')
-    plt.title('Variable Importance')
-    plt.show()
-
-
-
+        sorted_idx = np.argsort(importance)
+        pos = np.arange(sorted_idx.shape[0]) + .5
+        plt.figure()
+        plt.barh(pos, importance[sorted_idx], align='center')
+        plt.yticks(pos, x_train.columns[sorted_idx])
+        plt.xlabel('Relative Importance')
+        plt.title('Variable Importance')
+        plt.show()
 
     print 'Done basic training!'  
+
+    return y_pred
 
 def cal_baseline(x_test, y_test):
 
@@ -126,6 +125,29 @@ def cal_sensitivity(clf, x_all, y_all, train_size):
 
     print 'RSME for 10 random splits: {}'.format(rmse)
 
+def evaluate_model(x_train, x_test, y_train, y_test, plot_complexity = False):
+    max_depth = range(2,30)
+    rmse_train = []
+    rmse_test = []
+
+    for d in max_depth:
+        clf = tree.DecisionTreeRegressor(random_state=seed, max_depth = d)
+        y_pred_train = basic_training(clf, x_train, x_train, y_train, y_train)  #y_train
+        y_pred_test = basic_training(clf, x_train, x_test, y_train, y_test)     #y_test
+        rmse_train.append(performance_metric(y_train, y_pred_train))
+        rmse_test.append(performance_metric(y_test, y_pred_test))
+
+    print rmse_train
+    print rmse_test
+
+    if plot_complexity:
+        plt.figure()
+        plt.plot(max_depth, rmse_train, label='Training')
+        plt.plot(max_depth, rmse_test, label='Testing')
+        plt.xlabel('max depth')
+        plt.ylabel('RMSE')
+        plt.legend(loc='lower left')
+        plt.show()
 
 
 def main():  
@@ -141,7 +163,7 @@ def main():
     y_test = y_all[train_size:]
 
 
-    cal_baseline(x_test, y_test)
+    #cal_baseline(x_test, y_test)
 
     # Learning models
     clf = tree.DecisionTreeRegressor(random_state=seed)
@@ -149,12 +171,13 @@ def main():
     #from sklearn.ensemble import RandomForestRegressor
     #clf = RandomForestRegressor(random_state=seed)
 
-    basic_training(clf, x_train, x_test, y_train, y_test)
+    #basic_training(clf, x_train, x_test, y_train, y_test, plot_importance=True)
   
-    tuned_training(clf, x_train, x_test, y_train, y_test)
+    #tuned_training(clf, x_train, x_test, y_train, y_test)
 
-    cal_sensitivity(clf, x_all, y_all, train_size)
+    #cal_sensitivity(clf, x_all, y_all, train_size)
 
+    evaluate_model(x_train, x_test, y_train, y_test, plot_complexity=True)
 
 if __name__ == "__main__":
     main()
